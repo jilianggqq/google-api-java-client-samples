@@ -14,6 +14,8 @@
 
 package com.google.api.services.samples.oauth2.cmdline;
 
+import static java.lang.System.out;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -35,8 +37,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Command-line sample for the Google OAuth2 API described at <a
- * href="http://code.google.com/apis/accounts/docs/OAuth2Login.html">Using OAuth 2.0 for Login
+ * Command-line sample for the Google OAuth2 API described at
+ * <a href="http://code.google.com/apis/accounts/docs/OAuth2Login.html">Using OAuth 2.0 for Login
  * (Experimental)</a>.
  *
  * @author Yaniv Inbar
@@ -52,7 +54,7 @@ public class OAuth2Sample {
   /** Directory to store user credentials. */
   private static final java.io.File DATA_STORE_DIR =
       new java.io.File(System.getProperty("user.home"), ".store/oauth2_sample");
-  
+
   /**
    * Global instance of the {@link DataStoreFactory}. The best practice is to make it a single
    * globally shared instance across your application.
@@ -66,9 +68,9 @@ public class OAuth2Sample {
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
   /** OAuth 2.0 scopes. */
-  private static final List<String> SCOPES = Arrays.asList(
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/userinfo.email");
+  private static final List<String> SCOPES =
+      Arrays.asList("https://www.googleapis.com/auth/userinfo.profile",
+          "https://www.googleapis.com/auth/userinfo.email");
 
   private static Oauth2 oauth2;
   private static GoogleClientSecrets clientSecrets;
@@ -76,6 +78,7 @@ public class OAuth2Sample {
   /** Authorizes the installed application to access user's protected data. */
   private static Credential authorize() throws Exception {
     // load client secrets
+    out.println("load client secrets" + "");
     clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
         new InputStreamReader(OAuth2Sample.class.getResourceAsStream("/client_secrets.json")));
     if (clientSecrets.getDetails().getClientId().startsWith("Enter")
@@ -85,24 +88,36 @@ public class OAuth2Sample {
       System.exit(1);
     }
     // set up authorization code flow
-    GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-        httpTransport, JSON_FACTORY, clientSecrets, SCOPES).setDataStoreFactory(
-        dataStoreFactory).build();
+    out.println("set up authorization code flow");
+    GoogleAuthorizationCodeFlow flow =
+        new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, SCOPES)
+            .setDataStoreFactory(dataStoreFactory).build();
     // authorize
+    out.println("authorize");
     return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
   }
 
   public static void main(String[] args) {
     try {
+
+      out.println("initial httpTransport");
       httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+      out.println("dataStoreFactory ");
       dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
       // authorization
+      out.println("*************************do authorizing****************************");
       Credential credential = authorize();
+      out.println("*************************end authorizing****************************");
       // set up global Oauth2 instance
-      oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
-          APPLICATION_NAME).build();
+      out.println("set up global Oauth2 instance");
+      oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential)
+          .setApplicationName(APPLICATION_NAME).build();
       // run commands
+
+      out.println("tokenInfo");
       tokenInfo(credential.getAccessToken());
+
+      out.println("get user info");
       userInfo();
       // success!
       return;
